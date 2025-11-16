@@ -66,10 +66,10 @@ y = y.loc[X.index]
 print("After cleanup — X:", X.shape, " | y:", y.shape)
 print("All numeric:", X.dtypes.apply(lambda x: np.issubdtype(x, np.number)).all())
 
-# 5. Split data
+# Splitting the data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-# 6. Scale numeric features
+# Scaling numeric features to make the model more reliable
 scaler = StandardScaler()
 num_cols = ['temp', 'atemp', 'hum', 'windspeed']
 for col in num_cols:
@@ -77,15 +77,17 @@ for col in num_cols:
         X_train[col] = scaler.fit_transform(X_train[[col]])
         X_test[col] = scaler.transform(X_test[[col]])
 
-# Creating helper functions
+# Creating custom functions that can be reused
 def compute_vif(X_df):
-    Xc = sm.add_constant(X_df)
+    Xc = sm.add_constant(X_df)   # this adds constant term to the feature set and calculate vif  for each feature
     vif = pd.DataFrame({
         "feature": Xc.columns,
         "VIF": [variance_inflation_factor(Xc.values, i) for i in range(Xc.shape[1])]
     })
     return vif.sort_values("VIF", ascending=False)
 
+# the below function removes insignificant features (based on the p-values) that donot contribute to the model
+# Setting the p-value threshold as 0.05 also called significance level (sl)
 def backward_elimination(X, y, sl=0.05):
     X_work = X.copy()
     while True:
@@ -102,7 +104,7 @@ def backward_elimination(X, y, sl=0.05):
     final_model = sm.OLS(y, sm.add_constant(X_work)).fit()
     return final_model, X_work.columns
 
-# Running model
+# Running OLS and computing VIF
 print("\n ----- Running OLS regression ------ ")
 vif_table = compute_vif(X_train)
 
@@ -111,7 +113,7 @@ final_model, final_features = backward_elimination(X_train, y_train)
 print("\nFinal model summary:")
 print(final_model.summary())
 
-#Evaluating
+#Evaluating the model -----
 X_test_final = sm.add_constant(X_test[final_features], has_constant='add')
 y_pred = final_model.predict(X_test_final)
 
@@ -121,10 +123,10 @@ y_train_pred=final_model.predict(X_train_final)
 plt.scatter(y_train, y_train_pred)
 plt.xlabel("Actual cnt")
 plt.ylabel("Predicted cnt")
-plt.title("Actual vs Predicted")
+plt.title("Actual vs Predicted CNT")
 plt.show()
 
-print("\nModel Performance:")
+print("\nModel Performance is as:")
 print(f"Train R²: {final_model.rsquared:.3f}")
 print(f"Test R²:  {r2_score(y_test, y_pred):.3f}")
 rmse = np.sqrt(mean_squared_error(y_test, y_pred))
