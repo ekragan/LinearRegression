@@ -36,8 +36,8 @@ The model will guide strategic decisions like pricing, fleet allocation, marketi
 - seaborn - version 0.13.2
 - matplotlib - version 3.9.4
 - pandas - version 2.3.1
-- scikit-learn 
-- statsmodels
+- sklearn - version 1.6.1
+
 
 ## Conclusions
 The linear regression model successfully identifies the most important drivers of bike rental demand. Temperature, weather conditions, seasonality, and year-over-year growth significantly affect usage. The insights from this model can help BoomBikes plan operations, optimize supply, and strategize for post-pandemic recovery.
